@@ -1,6 +1,5 @@
 package kr.co.vcnc.playground.kmp
 
-import androidx.compose.material.Text
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import kotlinx.browser.document
@@ -10,7 +9,6 @@ fun main() {
     val body = document.body ?: return
 
     ComposeViewport(body) {
-        Text("wjdwekfewlkfhalwekfhl")
         App()
     }
 }

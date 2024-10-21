@@ -20,8 +20,32 @@ import kr.co.vcnc.playground.kmp.model.Todo
 
 
 fun main() {
-    embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+    embeddedServer(
+        Netty,
+        port = SERVER_PORT,
+        host = "0.0.0.0",
+        module = Application::module
+    ).start(wait = true)
+}
+
+val httpClient = HttpClient(CIO) {
+
+    this.install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+        json(
+            Json {
+                encodeDefaults = true
+                isLenient = true
+                coerceInputValues = true
+                ignoreUnknownKeys = true
+            }
+        )
+    }
+    this.defaultRequest {
+        url {
+            protocol = URLProtocol.HTTPS
+        }
+        this.host = "qatchmind-default-rtdb.asia-southeast1.firebasedatabase.app"
+    }
 }
 
 fun Application.module() {
@@ -40,26 +64,6 @@ fun Application.module() {
         allowMethod(HttpMethod.Patch)
     }
 
-    val httpClient = HttpClient(CIO) {
-
-        this.install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            json(
-                Json {
-                    encodeDefaults = true
-                    isLenient = true
-                    coerceInputValues = true
-                    ignoreUnknownKeys = true
-                }
-            )
-        }
-        this.defaultRequest {
-            url {
-                protocol = URLProtocol.HTTPS
-            }
-            this.host = "qatchmind-default-rtdb.asia-southeast1.firebasedatabase.app"
-        }
-    }
-
     install(ContentNegotiation) {
         json(
             Json {
@@ -74,10 +78,17 @@ fun Application.module() {
             call.respondText("GOOD")
         }
         get("tasks") {
-            val data: Map<String, Todo> = httpClient.get("/users.json").body()
+            val data: Map<String, Todo> =
+                httpClient.get("/users.json").body()
             call.response.headers.apply {
-                append(HttpHeaders.ContentType, "application/json")
-                append(HttpHeaders.Accept, "application/json")
+                append(
+                    HttpHeaders.ContentType,
+                    "application/json"
+                )
+                append(
+                    HttpHeaders.Accept,
+                    "application/json"
+                )
             }
             call.respond(data.values.toList())
         }
